@@ -1,0 +1,17 @@
+opam-version: "2.0"
+maintainer: "julien.tesson@nomadic-labs.com"
+authors: [ "Julien Tesson" ]
+license: "MIT"
+depends: [
+  "ocaml" {>= "4.08.0"} 
+  "dune" { build & >= "1.7" }
+  "lwt_ppx"
+  "lwt"
+  "ppx_deriving_yojson"
+  "hacl"
+  "hex"
+]
+build: [
+  [ "dune" "build" "-p" name "-j" jobs ]
+]
+synopsis: "Scrabblos server"

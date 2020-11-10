@@ -1,0 +1,12 @@
+(executables
+ (names main_server client printing_proxy author politicien)
+ (public_names scrabblos-server scrabblos-client scrabblos-proxy scrabblos-author scrabblos-politicien)
+ (libraries
+        yojson
+        ppx_deriving_yojson.runtime
+        ppx_deriving.runtime
+        lwt lwt_ppx lwt.unix
+        hex
+        hacl)
+ (preprocess (pps ppx_deriving_yojson ppx_deriving.std lwt_ppx))
+)
