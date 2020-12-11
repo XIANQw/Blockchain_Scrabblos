@@ -1,4 +1,5 @@
 let _ =
+  Log.log_info "Server starting...@.";
   let addr_ref = ref None in
   let port_ref = ref 12345 in
   let no_check_sigs_ref = ref false in

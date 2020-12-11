@@ -27,7 +27,7 @@ let fitness st word =
 let head ?level (st : Store.word_store) =
   (* ignoring unused variables - to be removed *)
   ignore level ;
-  ignore st ;
+  ignore st;  
   (* end ignoring unsed variables - to be removed *)
   (* TODO *)
-  assert false
+  assert false;

@@ -97,7 +97,10 @@ let activate st =
 let serve ?addr ~check_sigs ~turn_by_turn ~nb_rounds ?timeout ~port () =
   Log.log_info
     "Creating pools and server in %s mode.@."
-    (if turn_by_turn then "in turn-by-turn" else "free turn") ;
+    (if turn_by_turn then "turn-by-turn" else "free turn") ;
+  Log.log_info 
+    "check_sig=%b, nb_rounds=%d, port=%d.@."
+    check_sigs nb_rounds port;
   let netpoolos = Netpool.create () in
   let mempoolos =
     Mempool.create ~check_sigs ~turn_by_turn ~nb_rounds ?timeout ()
