@@ -47,9 +47,8 @@ let check_signature w =
 
 let make ~(word : letter list) ~(head : hash) ~(level : int) ~(pk : Crypto.pk)
     ~(sk : Crypto.sk) =
-  let politician = pk in
-  let msg = pre_bigstring ~word ~level ~head ~politician in
+  let msg = pre_bigstring ~word ~level ~head ~politician:pk in
   let signature = sign ~sk ~msg in
-  {word; level; head; politician; signature}
+  {word; level; head; politician=pk; signature}
 
 let hash word = Crypto.hash (to_bigstring word)
