@@ -2,7 +2,10 @@
 open Word
 open Crypto
 
-type politician = { sk : Crypto.sk; pk : Crypto.pk } [@@deriving yojson, show]
+type politician = { sk : Crypto.sk; pk: Crypto.pk}  [@@deriving yojson, show]
+
+let make_politician (sk:Crypto.sk) (pk:Crypto.pk) =
+  {sk:sk; pk:pk}
 
 type state = {
   politician : politician;
