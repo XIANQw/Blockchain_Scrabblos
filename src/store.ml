@@ -25,6 +25,10 @@ let get_word_opt (st : word_store) h = Hashtbl.find_opt st.words_table h
 
 let get_word (st : word_store) h = Hashtbl.find st.words_table h
 
+let get_words (st: word_store) = Hashtbl.to_seq_values st.words_table
+
+let get_words_table (st: word_store) = st.words_table
+
 let iter_words f st = Hashtbl.iter f st.words_table
 
 type letter_store = {
@@ -48,5 +52,7 @@ let add_letters (st : letter_store) (ls : Letter.t list) =
   List.iter (add_letter st) ls
 
 let get_letters (st : letter_store) h = Hashtbl.find_all st.letters_table h
+
+let get_letters_table (st : letter_store) = st.letters_table
 
 let length st = Hashtbl.length st.words_table
