@@ -49,20 +49,21 @@ let generate_new_word_by_letters (letters:letter list) =
   in parcours allCombinations
 
 
-let send_new_word st level =
+let send_new_word state level =
   let letters = List.map snd 
-  (List.of_seq (Hashtbl.to_seq (Store.get_letters_table st.letter_store))) in
+  (List.of_seq (Hashtbl.to_seq (Store.get_letters_table state.letter_store))) in
   let cur_letters = List.filter (fun (letter:letter) -> letter.level = level) letters in
   let res = generate_new_word_by_letters cur_letters in
-  if res != None then (
+  if Option.is_some res then (
+    let letterlist = Option.get res in
     Option.iter (fun (head:word) ->
       let word = make_word_on_blockletters level 
-        (Option.get res) 
-        st.politician 
+        letterlist 
+        state.politician 
         (Word.to_bigstring head) in
-      let message = Messages.Inject_word word in Client_utils.send_some message
+      Client_utils.send_some (Messages.Inject_word word)
     )
-    (Consensus.head ~level:(level - 1) st.word_store)
+    (Consensus.head ~level:(level - 1) state.word_store)
   )
 
 
