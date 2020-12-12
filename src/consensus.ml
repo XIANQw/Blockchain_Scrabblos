@@ -1,5 +1,4 @@
 open Word
-open Constants
 open Letter
 
 
@@ -35,20 +34,19 @@ let letter_score l : int =
 
 
 let word_score (word : word) : int =
-  let rec recur (wordContent : letter list) res : int =
+  let rec recur (wordContent : letter list) : int =
     match wordContent with
     | [] -> 0
-    | (e::tl) -> recur tl (res + (letter_score e))
-  in recur word.word 0
+    | (e::tl) -> recur tl + (letter_score e)
+  in recur word.word
 
 
 let fitness word_store word = 
-  let rec fitness hash score =
+  let rec recur hash =
     let word  = Store.get_word word_store hash in
-      if word.level = 0 then 
-        score 
-      else fitness (word.head) (score + (word_score word))
-  in fitness (Word.hash word) 0
+      if word.level = 0 then 0
+      else recur (word.head) + (word_score word)
+  in recur (Word.hash word) 
 
 let head ?level (word_store : Store.word_store) =
   (** Compare two words note and choose higher one *)
