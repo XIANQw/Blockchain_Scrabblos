@@ -192,13 +192,25 @@ let next_period pool =
         "still missing %a@."
         (Format.pp_print_list ~pp_sep:Format.pp_print_space Id.pp_politician_id)
         (Utils.diff pool.registered injecters) ;
-      None )
-
+        None )
+        
+let is_onlyone_inject (pool:mempool) (l : letter) =
+  let letters = pool.letterpoolos.letters in
+  let rec check list = 
+    match list with
+    | (level, lt) :: tl -> 
+      if level = l.level && lt.author = l.author then false 
+      else check tl
+    | [] -> true
+  in check letters
+        
 let inject_letter (pool : mempool) (l : letter) =
-  Log.log_info "[mempool] injecting letter@." ;
-  let injected = add_letter pool l in
-  let period_change = next_period pool in
-  (period_change, injected)
+  if is_onlyone_inject pool l then (
+    Log.log_info "[mempool] injecting letter@." ;
+    let injected = add_letter pool l in
+    let period_change = next_period pool in
+    (period_change, injected)
+  ) else (None, false)
 
 let inject_word (pool : mempool) (w : word) =
   let period_change = next_period pool in
