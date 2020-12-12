@@ -2,11 +2,6 @@ open Word
 open Constants
 open Letter
 
-(* ignoring unused variables - to be removed *)
-let _ = ignore genesis
-
-(* end ignoring unused variables - to be removed *)
-
 
 let letter_score l : int =
   match l.letter with
@@ -47,40 +42,30 @@ let word_score (word : word) : int =
   in recur word.word 0
 
 
-let fitness st word = 
+let fitness word_store word = 
   let rec fitness hash score =
-    let word  = Store.get_word st hash in
+    let word  = Store.get_word word_store hash in
       if word.level = 0 then 
         score 
       else fitness (word.head) (score + (word_score word))
   in fitness (Word.hash word) 0
 
-
-  
-
-let head ?level (st : Store.word_store) =
-  let compare word1 word2 st = 
+let head ?level (word_store : Store.word_store) =
+  (** Compare two words note and choose higher one *)
+  let compare word1 word2 = 
     let word1, word2 = Option.get word1, Option.get word2 in
-    let fit1, fit2 = fitness st word1, fitness st word2 in
+    let fit1, fit2 = fitness word_store word1, fitness word_store word2 in
       if fit1 > fit2 then 
         Some word1 
-      else if fit1 < fit2 then
-        Some word2 
-      else if word1.signature < word2.signature then 
-        Some word1
-      else if word1.signature > word2.signature then 
-        Some word2  
-      else  failwith "fail head"
+      else Some word2 
   in
   Hashtbl.fold
       (fun _ (word:Word.word) w ->
-        if Option.get level != word.level then
-          w 
-        else if w = None then 
-          Some(word) 
-        else 
-          compare (Some word) w st) 
-      (Store.get_words_table st)
+        if Option.get level != word.level then w 
+        else if w = None then Some(word) 
+        else compare (Some word) w
+      )  
+      (Store.get_words_table word_store)
       None
 
 
