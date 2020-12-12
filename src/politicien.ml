@@ -45,7 +45,7 @@ let generate_new_word_by_letters (letters:letter list) =
     match combinations with
     | [] -> None
     | combination :: tl -> 
-      if Dictionary.contains combination then Some combination else parcours tl
+      if contains combination then Some combination else parcours tl
   in parcours allCombinations
 
 
