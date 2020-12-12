@@ -176,7 +176,7 @@ let next_period pool =
     let got_all = Utils.included pool.registered injecters in
     if got_all then Log.log_info "Got all letters" ;
     if timeout then Log.log_info "Timeout" ;
-    if (* _non_empty_word_pool &&  *) got_all || timeout then (
+    if _non_empty_word_pool &&  got_all || timeout then (
       let current_period = pool.current_period + 1 in
       let next_period = current_period + 1 in
       Log.log_info_continue ": next turn (%d) !@." current_period ;
@@ -193,12 +193,13 @@ let next_period pool =
         (Format.pp_print_list ~pp_sep:Format.pp_print_space Id.pp_politician_id)
         (Utils.diff pool.registered injecters) ;
         None )
-        
+
 let is_onlyone_inject (pool:mempool) (l : letter) =
   let letters = pool.letterpoolos.letters in
   let rec check list = 
     match list with
     | (level, lt) :: tl -> 
+      (** the same author has already injected a letter in same level *)
       if level = l.level && lt.author = l.author then false 
       else check tl
     | [] -> true
