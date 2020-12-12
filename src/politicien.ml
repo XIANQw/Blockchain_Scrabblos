@@ -68,7 +68,6 @@ let send_new_word state level =
 
 
 let run ?(max_iter = 0) () =
-  ignore max_iter;
 
   (* Generate public/secret keys *)
   Log.log_warn " Generate public/secret keys " ;
@@ -128,7 +127,10 @@ let run ?(max_iter = 0) () =
                     next_words = state.next_words} in
           Option.iter (
             fun (head:word) ->
-              if head = word then send_new_word st !level
+              if head = word then (
+                Log.log_info "Head updated to incoming word %a@." Word.pp word ;  
+                send_new_word st !level
+              ) else Log.log_info "incoming word %a not a new head@." Word.pp word;
           ) (Consensus.head ~level:(!level - 1) storeWords)
       | Messages.Inject_letter letter -> (** Command server to inject a letter *)
         Store.add_letter storeLetters letter;
@@ -144,7 +146,7 @@ let run ?(max_iter = 0) () =
           (Consensus.head ~level:(!level-1) storeWords)
       | Messages.Next_turn next -> level := next; Log.log_info "Next turn";
       |_ -> ();
-    loop (max_iter - 1)
+      loop (max_iter - 1)
     );
   in loop max_iter
   
