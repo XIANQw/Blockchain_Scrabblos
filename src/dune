@@ -1,6 +1,6 @@
 (executables
- (names main_server client printing_proxy author politicien)
- (public_names scrabblos-server scrabblos-client scrabblos-proxy scrabblos-author scrabblos-politicien)
+ (names  localtests main_server client printing_proxy author politicien)
+ (public_names localtests scrabblos-server scrabblos-client scrabblos-proxy scrabblos-author scrabblos-politicien)
  (libraries
         yojson
         ppx_deriving_yojson.runtime
