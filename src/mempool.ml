@@ -158,7 +158,7 @@ let register pool id =
   pool.registered <- id :: Utils.remove_first pool.registered id
 
 let next_period pool =
-  if not pool.turn_by_turn then Some 0
+  if not pool.turn_by_turn then None
   else
     let injecters =
       List.filter
@@ -194,6 +194,7 @@ let next_period pool =
         (Utils.diff pool.registered injecters) ;
         None )
 
+(** Check if the author inject several letters in one turn *)
 let is_onlyone_inject (pool:mempool) (l : letter) =
   let letters = pool.letterpoolos.letters in
   let rec check list = 
@@ -211,7 +212,7 @@ let inject_letter (pool : mempool) (l : letter) =
     let injected = add_letter pool l in
     let period_change = next_period pool in
     (period_change, injected)
-  ) else (None, false)
+  ) else (next_period pool, false)
 
 let inject_word (pool : mempool) (w : word) =
   let period_change = next_period pool in
