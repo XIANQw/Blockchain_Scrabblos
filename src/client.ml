@@ -95,7 +95,7 @@ let send_some v =
 let test ?(hard = false) () =
   Log.log_info "Start client's test hard=%b.@." hard;
   let (pk, sk) = Crypto.genkeys () in
-  
+
   Log.log_info "Test resgistion.@.";
   let register = Messages.Register pk in
   let () = send_some register in
@@ -113,18 +113,18 @@ let test ?(hard = false) () =
   let () =
     receive ~check:(check_get_full_wordpool ~hard get_full_wordpool) ()
   in
-    
+
   Log.log_info "Test inject letter.@.";
-  
+
   let letter = Author.make_letter_on_hash sk pk 0 Constants.genesis 'a' in
   Log.log_info "Letter = %a@." Letter.pp_letter letter;
-  
+
   let message = Messages.Inject_letter letter in
   let () = send_some message in
   let getpool = Messages.Get_letterpool_since 0 in
   let () = send_some getpool in
   let () = receive ~check:(check_inject_letter ~hard message) () in
-  
+
   let politicien = Politicien.{ pk; sk } in
   let letters =
     List.map (Author.make_letter_on_hash sk pk 0 Constants.genesis) ['a'; 'b']
@@ -138,7 +138,7 @@ let test ?(hard = false) () =
   let getpool = Messages.Get_wordpool_since 0 in
   let () = send_some getpool in
   let () = receive ~check:(check_inject_word ~hard message) () in
-  
+
   Lwt.return_unit
 
 let _ =
