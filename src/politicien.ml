@@ -110,8 +110,8 @@ let run ?(max_iter = 0) () =
 
   (* Generate public/secret keys *)
   Log.log_warn " Generate public/secret keys " ;
-  let pk, sk = Crypto.genkeys () in
-  let regist_msg = Messages.Register pk in Client_utils.send_some regist_msg;
+  let (pk, sk) = Crypto.genkeys () in
+  Client_utils.send_some (Messages.Register pk);
   let politician = {sk:sk; pk:pk} in
   
   (* Get initial wordpool *)
@@ -154,39 +154,24 @@ let run ?(max_iter = 0) () =
   
   (*  main loop *)
   let level = ref wordpool.current_period in
+  let finish = ref false in
   let rec loop max_iter =
     if (max_iter = 0) then ()
     else (
       match Client_utils.receive () with
-      | Messages.Inject_word word -> (** Command server to inject a word *)
-          Store.add_word storeWords word;
-          let st = {politician=state.politician; 
-                    word_store=storeWords; 
-                    letter_store=state.letter_store; 
-                    next_words = state.next_words} in
-          Option.iter (
-            fun (head:word) ->
-              if head = word then (
-                Log.log_info "Head updated to incoming word %a@." Word.pp word ;  
-                send_new_word st !level
-              ) else Log.log_info "incoming word %a not a new head@." Word.pp word;
-          ) (Consensus.head ~level:(!level - 1) storeWords)
+      | Messages.Inject_word word -> (** Recieve command of inject a word *)
+        Log.log_info "******** Inject word %a *******@." Word.pp word ;  
+        Store.add_word storeWords word;
       | Messages.Inject_letter letter -> (** Command server to inject a letter *)
+        Log.log_info "******** Inject letter %a ******@." Letter.pp_letter letter;
         Store.add_letter storeLetters letter;
-        let st = {politician=state.politician; 
-                  word_store=state.word_store; 
-                  letter_store=storeLetters; 
-                  next_words = state.next_words} in
-        Option.iter 
-          (fun (head : word) -> 
-            Log.log_info "head is %a @." Word.pp head; 
-            send_new_word st !level
-          )
-          (Consensus.head ~level:(!level-1) storeWords)
-      | Messages.Next_turn next -> level := next; Log.log_info "Next turn";
+        send_new_word state letter.level
+      | Messages.Next_turn p -> 
+        if( p < 0) then finish := true
+        else level := p; Log.log_info "Next turn %d" p;
       |_ -> ();
-      loop (max_iter - 1)
-    );
+      if (!finish) then () else loop (max_iter - 1)
+    )
   in loop max_iter;
 
   (** Stop listening after loop *)
