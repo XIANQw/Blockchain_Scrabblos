@@ -148,8 +148,13 @@ let run ?(max_iter = 0) () =
       |_ -> ();
       loop (max_iter - 1)
     );
-  in loop max_iter
-  
+  in loop max_iter;
+
+  (** Stop listening after loop *)
+  Client_utils.send_some Messages.Stop_listen;
+  (** Find the winner *)
+  let winner = Consensus.win storeWords in
+  Log.log_info "winner is %a@." Crypto.pp_pk winner
 
 let _ =
   let main =

@@ -43,7 +43,7 @@ let word_score (word : word) : int =
 
 let fitness word_store word = 
   let rec recur hash =
-    let word  = Store.get_word word_store hash in
+    let word = Store.get_word word_store hash in
       if word.level = 0 then 0
       else recur (word.head) + (word_score word)
   in recur (Word.hash word) 
@@ -58,14 +58,34 @@ let head ?level (word_store : Store.word_store) =
       else Some word2 
   in
   Hashtbl.fold
-      (fun _ (word:Word.word) w ->
-        if Option.get level != word.level then w 
-        else if w = None then Some(word) 
-        else compare (Some word) w
-      )  
+      (fun _ (word:Word.word) init ->
+        if Option.get level != word.level then init 
+        else if init = None then Some(word) 
+        else compare (Some word) init
+      )
       (Store.get_words_table word_store)
       None
 
+
+let win (word_store:Store.word_store) =
+  let scores = Hashtbl.create (Store.length word_store) in
+  let words = List.of_seq (Hashtbl.to_seq (Store.get_words_table word_store) ) in
+  List.iter (fun pair ->
+    match pair with
+    | (_, word) ->     
+      let score = word_score word in 
+      if (Hashtbl.mem scores word.politician) then (
+        let refscore = Hashtbl.find scores word.politician in
+        refscore := !refscore + score;
+      ) else Hashtbl.add scores word.politician (ref score);
+  ) words ;
+  let winner = ref None in
+  let max_score = ref 0 in
+  let author_scores = List.of_seq (Hashtbl.to_seq scores) in
+  List.iter (fun (pk, score) -> 
+    if(!score > !max_score) then winner := Some pk;
+  ) author_scores;
+  Option.get !winner
 
 
 
