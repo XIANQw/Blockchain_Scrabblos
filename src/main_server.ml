@@ -4,7 +4,7 @@ let _ =
   let port_ref = ref 12345 in
   let no_check_sigs_ref = ref false in
   let no_turn_ref = ref false in
-  let nb_rounds_ref = ref 200 in
+  let nb_rounds_ref = ref 15 in
   let timeout_ref = ref None in
   let parse_list =
     [
