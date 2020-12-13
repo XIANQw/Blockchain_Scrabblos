@@ -5,8 +5,8 @@ dune build
 
 TEMPDIR=$(pwd)/tmp
 mkdir $TEMPDIR
-N_AUTHORS=5
-N_POL=2
+N_AUTHORS=1
+N_POL=1
 dune build
 
 (
