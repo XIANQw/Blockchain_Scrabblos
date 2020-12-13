@@ -12,18 +12,19 @@ let make_letter_on_block sk pk level block letter : letter =
 (** Just generate lowercase latin letter*)
 let random_char () = Random.int (122 - 97) + 97 |> Char.chr
 
-let send_new_letter sk pk level store =
+let send_new_letter sk pk level store letter =
   (* Get blockchain head *)
   Option.iter
     (fun head ->
       (* Create new random letter *)
+      Log.log_info "**** head word is %a@.*******" Word.pp head;
       let letter =
         make_letter_on_block
           sk
           pk
           level
           (Word.to_bigstring head)
-          (random_char ())
+          letter
       in
       (* Send letter *)
       let message = Messages.Inject_letter letter in
@@ -39,9 +40,9 @@ let run ?(max_iter = 0) () =
   Client_utils.send_some reg_msg ;
 
   (* drop provided letter_bag *)
-  ( match Client_utils.receive () with
-  | Messages.Letters_bag _ -> ()
-  | _ -> assert false ) ;
+  let letter_bag = ( match Client_utils.receive () with
+  | Messages.Letters_bag letter_bag -> letter_bag
+  | _ -> assert false ) in
 
   (* Get initial wordpool *)
   let getpool = Messages.Get_full_wordpool in
@@ -57,7 +58,8 @@ let run ?(max_iter = 0) () =
   Store.add_words store wordpool.words ;
 
   (* Create and send first letter *)
-  send_new_letter sk pk wordpool.current_period store ;
+  let random_letter = List.nth letter_bag (Random.int (List.length letter_bag)) in
+  send_new_letter sk pk wordpool.current_period store random_letter ;
 
   (* start listening to server messages *)
   Client_utils.send_some Messages.Listen ;
@@ -75,7 +77,8 @@ let run ?(max_iter = 0) () =
           (fun head ->
             if head = w then (
               Log.log_info "Head updated to incoming word %a@." Word.pp w ;
-              send_new_letter sk pk !level store )
+              let random_letter = List.nth letter_bag (Random.int (List.length letter_bag)) in
+              send_new_letter sk pk !level store random_letter)
             else Log.log_info "incoming word %a not a new head@." Word.pp w)
           (Consensus.head ~level:(!level - 1) store)
       | Messages.Next_turn p -> 
@@ -85,7 +88,9 @@ let run ?(max_iter = 0) () =
     )
   in loop max_iter ;
   (** When loop finished, stop listening *)
-  Client_utils.send_some Messages.Stop_listen
+  Client_utils.send_some Messages.Stop_listen;
+  let winner = Consensus.win store in 
+  Log.log_info "WINNER: %a@." Crypto.pp_pk winner
 
 let _ =
   let main =
