@@ -49,14 +49,14 @@ let fitness word_store word =
   in recur (Word.hash word) 
 
 let head ?level (word_store : Store.word_store) =
-  (** Compare two words note and choose higher one *)
-  let compare word1 word2 = 
+  let compare word1 word2 =
     let word1, word2 = Option.get word1, Option.get word2 in
     let fit1, fit2 = fitness word_store word1, fitness word_store word2 in
-      if fit1 > fit2 then 
-        Some word1 
-      else Some word2 
+      if fit1 > fit2 then
+        Some word1
+      else Some word2
   in
+  (** Compare two words note and choose higher one *)
   Hashtbl.fold
       (fun _ (word:Word.word) init ->
         if Option.get level != word.level then init 
