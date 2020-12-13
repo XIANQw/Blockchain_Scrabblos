@@ -45,11 +45,29 @@ let generate_new_word_by_letters (letters:letter list) =
     match combinations with
     | [] -> None
     | combination :: tl -> 
-      if contains combination then Some combination else parcours tl
+      if contains combination then Some combination 
+      else parcours tl
   in parcours allCombinations
 
+let generate_new_word level state = 
+  let letter_store = state.letter_store in
+  let word_store = state.word_store in
+  let head_op = Consensus.head ~level:(level) word_store in
+  match head_op with 
+  |None -> None
+  |head -> let word = Option.get head in
+    let hash_word = Word.hash word in
+    let head_letters = Store.get_letters letter_store hash_word in
+    let valid_letters = generate_new_word_by_letters head_letters in
+    match valid_letters with
+    |None -> None
+    |valid_letters -> Some (make_word_on_blockletters level 
+      (Option.get valid_letters) 
+      state.politician
+      (Word.to_bigstring word))
 
-let send_new_word state level =
+
+(* let send_new_word state level =
   let letters = List.map snd 
   (List.of_seq (Hashtbl.to_seq (Store.get_letters_table state.letter_store))) in
   let cur_letters = List.filter (fun (letter:letter) -> letter.level = level) letters in
@@ -64,8 +82,29 @@ let send_new_word state level =
       Client_utils.send_some (Messages.Inject_word word)
     )
     (Consensus.head ~level:(level - 1) state.word_store)
-  )
+  ) *)
 
+  let is_word_optimal word_store word =
+    let optimal = ref word in
+    let words = Store.get_words_table word_store in
+    let word_list = List.of_seq (Hashtbl.to_seq words) in
+    List.iter (fun (_, mot) ->
+      let scoreWord = Consensus.fitness word_store word in
+      let scoreMot = Consensus.fitness word_store mot in
+      if((mot.level = word.level) &&  (scoreMot > scoreWord)) then optimal := mot
+      else () 
+    ) word_list; !optimal = word
+    
+  let send_new_word state level =
+    let word_op = generate_new_word level state in
+    match word_op with
+    |None -> Log.log_info "Generate word failed@."
+    |word_op -> let word = Option.get word_op in
+    (** Inject the word if and only if word has the highest score *)
+    if is_word_optimal state.word_store word then (
+      Log.log_info "Best word is %a@." Word.pp_word word;
+      Store.add_word (state.word_store) word
+    )
 
 let run ?(max_iter = 0) () =
 
