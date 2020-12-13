@@ -1,7 +1,7 @@
 #!/bin/bash
 
-
-dune build
+rm -Rf _build
+rm -Rf tmp
 
 TEMPDIR=$(pwd)/tmp
 mkdir $TEMPDIR
