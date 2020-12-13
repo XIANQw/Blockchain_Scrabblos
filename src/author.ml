@@ -69,19 +69,21 @@ let run ?(max_iter = 0) () =
     else (
       ( match Client_utils.receive () with
       | Messages.Inject_word w ->
-          Store.add_word store w ;
-          Option.iter
-            (fun head ->
-              if head = w then (
-                Log.log_info "Head updated to incoming word %a@." Word.pp w ;
-                send_new_letter sk pk !level store )
-              else Log.log_info "incoming word %a not a new head@." Word.pp w)
-            (Consensus.head ~level:(!level - 1) store)
-      | Messages.Next_turn p -> level := p
+        Store.add_word store w ;
+        Option.iter
+          (fun head ->
+            if head = w then (
+              Log.log_info "Head updated to incoming word %a@." Word.pp w ;
+              send_new_letter sk pk !level store )
+            else Log.log_info "incoming word %a not a new head@." Word.pp w)
+          (Consensus.head ~level:(!level - 1) store)
+      | Messages.Next_turn p -> 
+        level := p;
       | Messages.Inject_letter _ | _ -> () ) ;
       loop (max_iter - 1) )
-  in
-  loop max_iter
+  in loop max_iter ;
+  (** When loop finished, stop listening *)
+  Client_utils.send_some Messages.Stop_listen
 
 let _ =
   let main =
