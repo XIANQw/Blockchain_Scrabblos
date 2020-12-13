@@ -64,6 +64,7 @@ let run ?(max_iter = 0) () =
 
   (* start main loop *)
   let level = ref wordpool.current_period in
+  let finish = ref false in
   let rec loop max_iter =
     if max_iter = 0 then ()
     else (
@@ -78,9 +79,10 @@ let run ?(max_iter = 0) () =
             else Log.log_info "incoming word %a not a new head@." Word.pp w)
           (Consensus.head ~level:(!level - 1) store)
       | Messages.Next_turn p -> 
-        level := p;
+          if p>=0 then level := p else finish := true;
       | Messages.Inject_letter _ | _ -> () ) ;
-      loop (max_iter - 1) )
+      if !finish then () else loop (max_iter - 1) 
+    )
   in loop max_iter ;
   (** When loop finished, stop listening *)
   Client_utils.send_some Messages.Stop_listen
