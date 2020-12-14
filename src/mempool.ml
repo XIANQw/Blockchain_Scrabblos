@@ -158,7 +158,7 @@ let register pool id =
   pool.registered <- id :: Utils.remove_first pool.registered id
 
 let next_period pool =
-  if not pool.turn_by_turn then None
+  if not pool.turn_by_turn then Some 0
   else
     let injecters =
       List.filter
@@ -176,7 +176,7 @@ let next_period pool =
     let got_all = Utils.included pool.registered injecters in
     if got_all then Log.log_info "Got all letters" ;
     if timeout then Log.log_info "Timeout" ;
-    if _non_empty_word_pool &&  got_all || timeout then (
+    if (* _non_empty_word_pool &&  *) got_all || timeout then (
       let current_period = pool.current_period + 1 in
       let next_period = current_period + 1 in
       Log.log_info_continue ": next turn (%d) !@." current_period ;
@@ -186,13 +186,15 @@ let next_period pool =
       pool.letterpoolos.current_period <- current_period ;
       pool.letterpoolos.next_period <- next_period ;
       pool.current_period_start <- Unix.time () ;
-      Some current_period )
+      if current_period == pool.nb_rounds then Some (-1) else Some current_period )
     else (
       Log.log_info
         "still missing %a@."
         (Format.pp_print_list ~pp_sep:Format.pp_print_space Id.pp_politician_id)
         (Utils.diff pool.registered injecters) ;
-        None )
+      None )
+
+
 
 (** Check if the author inject several letters in one turn *)
 let is_onlyone_inject (pool:mempool) (l : letter) =
