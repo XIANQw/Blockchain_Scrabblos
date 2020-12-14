@@ -48,23 +48,22 @@ let fitness word_store word =
       else recur (word.head) + (word_score word)
   in recur (Word.hash word) 
 
-let head ?level (word_store : Store.word_store) =
+let rec head ?level (word_store : Store.word_store) =
   let compare word1 word2 =
-    let word1, word2 = Option.get word1, Option.get word2 in
-    let fit1, fit2 = fitness word_store word1, fitness word_store word2 in
-      if fit1 > fit2 then
-        Some word1
-      else Some word2
+    if Option.is_none word1 then word2
+    else if Option.is_none word2 then word1
+    else (
+      let word1, word2 = Option.get word1, Option.get word2 in
+      let fit1, fit2 = fitness word_store word1, fitness word_store word2 in
+      if fit1 > fit2 then Some word1 else Some word2
+    )
   in
   (** Compare two words note and choose higher one *)
-  Hashtbl.fold
-      (fun _ (word:Word.word) init ->
-        if Option.get level != word.level then init 
-        else if init = None then Some(word) 
-        else compare (Some word) init
-      )
-      (Store.get_words_table word_store)
-      None
+  let res = ref None in
+  let word_list = List.of_seq (Hashtbl.to_seq (Store.get_words_table word_store)) in
+  List.iter (fun (_, word) -> let word = Some word in res := (compare !res word)) word_list;
+  if Option.is_none !res then head ~level:((Option.get level) -1)  word_store else !res
+  
 
 
 let win (word_store:Store.word_store) =
