@@ -107,24 +107,25 @@ let test ?(hard = false) () =
   let () =
     receive ~check:(check_get_full_letterpool ~hard get_full_letterpool) ()
   in
+
   Log.log_info "Test get full wordpool.@.";
   let get_full_wordpool = Messages.Get_full_wordpool in
   let () = send_some get_full_wordpool in
   let () =
     receive ~check:(check_get_full_wordpool ~hard get_full_wordpool) ()
   in
-
+    
   Log.log_info "Test inject letter.@.";
-
+  
   let letter = Author.make_letter_on_hash sk pk 0 Constants.genesis 'a' in
-  Log.log_info "Letter = %a@." Letter.pp_letter letter;
-
+  ignore letter;
+  (*
   let message = Messages.Inject_letter letter in
   let () = send_some message in
   let getpool = Messages.Get_letterpool_since 0 in
   let () = send_some getpool in
   let () = receive ~check:(check_inject_letter ~hard message) () in
-
+  
   let politicien = Politicien.{ pk; sk } in
   let letters =
     List.map (Author.make_letter_on_hash sk pk 0 Constants.genesis) ['a'; 'b']
@@ -138,7 +139,7 @@ let test ?(hard = false) () =
   let getpool = Messages.Get_wordpool_since 0 in
   let () = send_some getpool in
   let () = receive ~check:(check_inject_word ~hard message) () in
-
+  *)
   Lwt.return_unit
 
 let _ =
