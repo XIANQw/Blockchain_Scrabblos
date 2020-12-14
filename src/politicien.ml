@@ -7,7 +7,7 @@ type politician = { sk : Crypto.sk; pk : Crypto.pk } [@@deriving yojson, show]
 type state = {
   politician : politician;
   word_store : Store.word_store;
-  mutable letter_store : Store.letter_store;
+  letter_store : Store.letter_store;
   next_words : word list;
 }
 
